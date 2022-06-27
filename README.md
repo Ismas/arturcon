@@ -20,8 +20,7 @@ All these functionalities can be mixed with the main launchpad one. And if you l
 
 ArturCON uses the pads, so leaves the pots free for you to assign to other applications (Jack plugins, for example)
 
-![alt text](https://github.com/Ismas/arturcon/blob/master/arturcon.png?raw=true)
-
+![alt text](https://github.com/Ismas/arturcon/blob/master/arturcon.gif?raw=true)
 ## How to use
 Configure your desired actions, launch the script with the desired parameters, connect your BeatStep, be happy.
 Read the How to config section at the bottom of this readme.
@@ -166,14 +165,14 @@ pk.KeyCode(code)
 
 # How it works
 
-ArturiCON works by reading BeatStep MIDI input, and asigning note values to actions. For this all pads should be assigned to "General" channel and each pad configured to play one note. You don't have to do this as the script does it for you. AFAIK this will not modify your stored configuration, so just stop Arturicon, recall a config and .
+ArturCON works by reading BeatStep MIDI input, and asigning note values to actions. For this all pads should be assigned to "General" channel and each pad configured to play one note. You don't have to do this as the script does it for you. AFAIK this will not modify your stored configuration, so just stop Arturcon, recall a config and your are done.
 
 # TODOs
 * Make something with the pots
 * ?
 
 # Bugs
-* Sometimes the first letter of a string is not recognized as uppercase. In that case do [ kk.shift, "r", kk.shift, "est of the string"]
+* Sometimes at the actions the first letter of a string is not recognized as uppercase. In that case do [ kk.shift, "r", kk.shift, "est of the string"]
 * Sure, many. Just tell me.
 
 ## Contributing

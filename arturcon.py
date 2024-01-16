@@ -5,12 +5,11 @@
 ############################################
 # Many thanks to Untergeek for the sysex compilation:
 # https://www.untergeek.de/2014/11/taming-arturias-beatstep-sysex-codes-for-programming-via-ipad/
-# Ismas May-June 2022
+# Ismas May-June 2022, 2024
 # https://doublepanic.com
 # (c) License MIT
-# V0.0.3
+# V0.0.5
 
-#import arturconf
 import sys
 import os
 import random
@@ -21,39 +20,13 @@ import threading
 import mido.backends.rtmidi
 from pynput import keyboard as pk
 from pynput.keyboard import Key as kk
-from scipy import rand  
+from scipy import rand
 from time import sleep
 
-##################################################
-# ACTION MAPS
-# EL CANAL midi es un bancoe. 16 canales.
-##################################################
+# Quick and dirty globalization
+import arturconf as cfg
+pads = cfg.pads
 
-#channel is positional, pad isn't
-#This is it for rendimiento
-pads = [
-    [ #channel/bank 0
-        { "pad":0, "note": 44, "a":[kk.media_previous], "toggle":False, "state":False },   
-        { "pad":1, "note": 45, "a":[kk.media_play_pause], "toggle":True, "state":False },   
-        { "pad":2, "note": 46, "a":[kk.media_next], "toggle":False, "state":False },   
-        { "pad":3, "note": 47, "a":["MyUser",kk.tab], "toggle":False, "state":False },   
-        { "pad":4, "note": 48, "a":[kk.shift,"M",kk.shift,"yPasswd",kk.enter], "toggle":False, "state":False },   
-        { "pad":5, "note": 49, "a":[kk.media_volume_down], "toggle":False, "state":False },   
-        { "pad":6, "note": 50, "a":[kk.media_volume_up], "toggle":False, "state":False },   
-        { "pad":7, "note": 51, "a":[kk.media_volume_mute], "toggle":True, "state":False },   
-        { "pad":8, "note": 36, "a":[kk.shift, kk.tab, kk.shift], "toggle":False, "state":False },   
-        { "pad":9, "note": 37, "a":[kk.alt, kk.tab], "toggle":True, "state":False },   
-        { "pad":10, "note": 38, "a":[kk.tab], "toggle":False, "state":False },   
-        { "pad":11, "note": 39, "a":[kk.alt_l, kk.print_screen,kk.alt_l], "toggle":False, "state":False },   
-        { "pad":12, "note": 40, "a":["FirstField",kk.tab,"SecondField",kk.tab,"ThirdField",kk.enter], "toggle":False, "state":False },   
-        #{ "pad":13, "note": 41, "a":[], "toggle":False, "state":False },   
-        { "pad":14, "note": 42, "a":[kk.alt,kk.f4,kk.alt], "toggle":False, "state":False },   
-        { "pad":15, "note": 43, "a":[kk.ctrl_l, kk.alt_l, pk.KeyCode(76),kk.ctrl_l, kk.alt_l], "toggle":False, "state":False }   
-    ],[ #channel/bank 1
-        { "pad":0, "note": 44, "a":["Your actions here"], "toggle":True, "state":True }   
-    ],[ #channel/bank 2, and so on
-    ],[],[],[],[],[],[],[],[],[],[],[],[],[]
-]
 #####################
 # Don't touch below here
 ##################################                                  
@@ -64,7 +37,7 @@ ioport  = ""
 chnl    = 0
 achnl   = -1
 cols    = { "negro": 0x00, "rojo":0x01, "azul":0x10, "magenta":0x11 }
-VER     = "0.0.3"
+VER     = "0.0.5"
 DO_PROC = False
 BLINKEN = False
 THRU    = False
@@ -102,9 +75,9 @@ def monitor(cadena):
     if MONITOR: print(str(int(time.time())), cadena, file=sys.stderr)
 
 def select_midin():
+    global ioport
     debug("select_midin:---------")
     # Menu para que el usuario seleccione un puerto
-    global ioport
     mdins = md.get_ioport_names()
     print("\n\nMIDI ports:\n")
     k=0
@@ -174,18 +147,21 @@ def inictrl():
     # Inicia los pads de control.
     # Chan encendido y como nota
     # Nota chan 0x20
+    sysend(0x41, 0x04, 0)   # Global acceleation: low
     for i in range(0,8):
         sysend(0x01 ,0x58+i ,0x09)    # comportamiento: nota
         sysend(0x02 ,0x58+i ,0x70)    # canal: 0 
         sysend(0x03 ,0x58+i ,CTRLBTN)    # nota: CTRLBTN
         sysend(0x06 ,0x58+i ,0x01)    # tipo: gate
         sysend(0x10 ,0x58+i ,0x00)    # Luz chan
-    sysend(0x10 ,0x5f ,0x11)    # Luz chan
-    for i in range(0,15):                 # Comportamiento de los encoders
+        sysend(0x10 ,0x5f ,0x11)    # Luz chan
+    for i in range(0,16):                 # Comportamiento de los encoders incluyendo el dial
+        sysend(0x02 ,0x20+i ,0x00)        # Canal 1 
+        sysend(0x03 ,0x20+i ,0x21+i)      # CC NUMBER
         sysend(0x06 ,0x20+i ,0x00)        # absoluto
         sysend(0x04 ,0x20+i ,0x00)        # lowest
         sysend(0x05 ,0x20+i ,0x7f)        # top
-    
+
 def monchan():
     # Monitoriza canal global cada 2 segundos
     # Receive global midi channel 
@@ -263,7 +239,7 @@ def monitorMIDI():
     # Monitoriza los mensajes del canal indicado
     MONITOR=True
     for msg in ioport:
-        monitor(msg)
+        monitor("%s"%(msg) )
 
 def repeater():
     debug("repeater:---------")
@@ -339,7 +315,7 @@ def usage():
     print("\nUsage: arturcon [parameters]")
     print("\n\tModes (pick one):")
     print("\t-p, --process:\tUse your BeatStep as a button deck (Default)")
-    print("\t\tThe folowwing modes can be used themselves or added to 'process'")
+    print("\t\tThe folowwing modes can be used alone or added to 'process'")
     print("\t-m, --monitor:\tJust print BeatStep MIDI messages at stout")
     print("\t-t, --thru:\tJust creates a virtual output MIDI port and redirects BeatStep messages (not very practical)")
     print("\t-b, --blinken:\tAwesome astonising blinkenlights on your BeatStep! ")
@@ -384,7 +360,7 @@ def main(argv):
             DEBUG    = False
 
     # If thru selected open port
-    if THRU: tport = md.open_output("ArturiCON_0",True)
+    if THRU: tport = md.open_output("ArturCON_0",True)
 
     # Use choosen de detection
     select_midin() if SELECT else autocon(RESIDENT)
@@ -392,7 +368,6 @@ def main(argv):
     # Greeting
     print("Arturcon at your service!")
 
-#    try:
     if not (MONITOR or BLINKEN or THRU) or DO_PROC:
         blinken(BLINKEN)
         inictrl()
@@ -403,9 +378,6 @@ def main(argv):
     if MONITOR: monitorMIDI()
     if THRU:    repeater()
     debug("END-----------")
-#    except:
-#        main(sys.argv[1:])
-
 if __name__ == "__main__":
     # DETACH!
     #if os.fork(): sys.exit()

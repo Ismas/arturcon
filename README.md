@@ -84,7 +84,7 @@ Usage: arturcon [parameters]
 	-d, --debug:	Print debug messages at stderr
 	-r, --resident:	Keeps looking for BeatStep, for start-at-boot use and make permanent. Disables -s and -d
 	-v, --version:	Print version and exits
-	-h,?, --help:	This text
+	-h, -?, --help:	This text
 
 ```
 
@@ -97,14 +97,13 @@ Button configuration consist of a dictionary of dictionaries (one for bank) asso
 First dictionary (the stuff between "{ }") is bank 0 (channel 0), second is bank 1 (channel 1), and so on.
 
 ```python
-{ "pad":1, "note": 45, "a":[kk.media_play_pause], "toggle":True, "state":False },
+{ "pad":1, "a":[kk.media_play_pause], "toggle":True, "state":False },
 ```
 * "pad": is the pad number, starting at 0 and reading left to right and top to bottom. So "1" is the second and "15" is last. Order does not matter.
-* "note": Don't change this, the script will do it for you.
 * "a": The action/s to perform. It's a vector of keys to press, media actions, string or keychars, or any combination of them. They are executed sequentially. The possible actions are listed below.
 * "toggle": Indicates if the button is toggable instead of push-only. When toggle, the pad will be lit magenta when "on" and red when "off". For example, to enable or disable the mute:
 ```python
-{ "pad":7, "note": 51, "a":[kk.media_volume_mute], "toggle":True, "state":False },   
+{ "pad":7, "a":[kk.media_volume_mute], "toggle":True, "state":False },   
 ```
 * "state": Defines the inital state for a toggle pad. Has no use in other modes.
 

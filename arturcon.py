@@ -8,7 +8,7 @@
 # Ismas May-June 2022, 2024
 # https://doublepanic.com
 # (c) License MIT
-# V0.0.5
+# V0.0.6
 
 import sys
 import os
@@ -37,7 +37,7 @@ ioport  = ""
 chnl    = 0
 achnl   = -1
 cols    = { "negro": 0x00, "rojo":0x01, "azul":0x10, "magenta":0x11 }
-VER     = "0.0.5"
+VER     = "0.0.6"
 DO_PROC = False
 BLINKEN = False
 THRU    = False
@@ -144,6 +144,11 @@ def sysread(b1,b2):
     return ioport.receive()
 
 def inictrl():
+    # Assign notes to pads in logic
+    for j in pads:   # for each channel/bank
+       for i in j:   # for each pad
+            i["note"] = i["pad"]+44 if i["pad"]<8 else i["pad"]+28
+
     # Inicia los pads de control.
     # Chan encendido y como nota
     # Nota chan 0x20
@@ -324,7 +329,7 @@ def usage():
     print("\t-d, --debug:\tPrint debug messages at stderr")
     print("\t-r, --resident:\tKeeps looking for BeatStep, for start-at-boot use and make permanent. Disables -s and -d")
     print("\t-v, --version:\tPrint version and exits")
-    print("\t-h,?, --help:\tThis text\n")
+    print("\t-h, -?, --help:\tThis text\n")
 
 ##################################333   
 # main
